@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TinQuest RPG - Campaign Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .generator-section {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4a4a4a;
+            padding-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px;
+            background: #1a1a1a;
+            border: 1px solid #4a4a4a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            border-radius: 4px;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        button.secondary {
+            background: #2196F3;
+        }
+        
+        button.secondary:hover {
+            background: #0b7dda;
+        }
+        
+        .print-area {
+            display: none;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .container, header, .generator-section {
+                display: none;
+            }
+            
+            .print-area {
+                display: block !important;
+            }
+            
+            /* Avery 5371 Layout: Portrait sheet, 2 across × 5 down, cards are landscape */
+            @page {
+                size: letter portrait;
+                margin: 0.5in 0.75in;
+            }
+            
+            .card {
+                float: left;
+                margin: 0;
+                width: 3.5in;
+                height: 2in;
+                box-sizing: border-box;
+            }
+            
+            /* Create 2-column layout - force every odd card to left column */
+            .card:nth-child(odd) {
+                clear: left;
+                margin-right: 0.5in;
+            }
+            
+            /* Even cards (right column) have no right margin */
+            .card:nth-child(even) {
+                margin-right: 0;
+                clear: none;
+            }
+            
+            /* Page break after every 10 cards */
+            .card:nth-child(10n) {
+                page-break-after: always;
+            }
+        }
+        
+        /* Card Styles for Print */
+        .card {
+            width: 3.5in;
+            height: 2in;
+            background: white;
+            border: 1px solid #000;
+            padding: 0.08in;
+            position: relative;
+            overflow: hidden;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+            margin: 0;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        .card-front {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+        }
+        
+        .card-back {
+            background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
+        }
+        
+        .card h1 {
+            font-size: 10pt;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 1px;
+            margin-bottom: 2px;
+            letter-spacing: 0.3px;
+            color: #000;
+        }
+        
+        .card h2 {
+            font-size: 6.5pt;
+            font-weight: bold;
+            margin-top: 2px;
+            margin-bottom: 1px;
+            border-bottom: 1px solid #666;
+            padding-bottom: 0px;
+            color: #000;
+        }
+        
+        .card .content {
+            font-size: 5.5pt;
+            line-height: 1.1;
+            color: #000;
+        }
+        
+        .card .section {
+            margin-bottom: 2px;
+        }
+        
+        .card table {
+            width: 100%;
+            font-size: 5.5pt;
+            border-collapse: collapse;
+            margin-top: 1px;
+        }
+        
+        .card td {
+            padding: 0px 2px;
+            border: 1px solid #999;
+        }
+        
+        .card .footer {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 4pt;
+            color: #666;
+        }
+        
+        .card ul {
+            margin-left: 6px;
+            margin-top: 0px;
+            padding-left: 0px;
+        }
+        
+        .card li {
+            margin-bottom: 0px;
+        }
+        
+        .card strong {
+            font-weight: bold;
+        }
+        
+        .card .center {
+            text-align: center;
+        }
+        
+        .card .stat-box {
+            display: inline-block;
+            border: 1px solid #000;
+            padding: 1px 4px;
+            margin: 1px;
+            font-weight: bold;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: #3a3a3a;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .tab.active {
+            background: #4CAF50;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .card-preview {
+            background: white;
+            border: 2px solid #000;
+            padding: 10px;
+            border-radius: 4px;
+            color: #000;
+            font-size: 9px;
+            line-height: 1.3;
+            min-height: 200px;
+        }
+        
+        .card-preview h4 {
+            border-bottom: 2px solid #000;
+            padding-bottom: 3px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚔️ TINQUEST RPG ⚔️</h1>
+            <p>Campaign Builder - Optimized for Avery 5371</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('build')">Campaign Builder</button>
+            <button class="tab" onclick="switchTab('preview')">Preview Cards</button>
+        </div>
+        
+        <!-- CAMPAIGN BUILDER TAB -->
+        <div id="build-tab" class="tab-content active">
+            <div class="generator-section">
+                <h2>Step 1: Create Your Character</h2>
+                
+                <div class="form-group">
+                    <label for="char-name">Character Name:</label>
+                    <input type="text" id="char-name" placeholder="Enter character name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="char-setting">Setting:</label>
+                    <select id="char-setting">
+                        <option value="fantasy">Fantasy</option>
+                        <option value="cyberpunk">Cyberpunk</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="char-class">Role/Class:</label>
+                    <select id="char-class">
+                        <!-- Will be populated by JS -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Skills (auto-assigned by class):</label>
+                    <div id="class-skills" style="padding: 8px; background: #1a1a1a; border: 1px solid #4a4a4a; border-radius: 4px; min-height: 40px;">
+                        Select a class to see skills
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Starting Gear (auto-assigned by class):</label>
+                    <div id="class-gear" style="padding: 8px; background: #1a1a1a; border: 1px solid #4a4a4a; border-radius: 4px; min-height: 60px;">
+                        Select a class to see gear
+                    </div>
+                </div>
+            </div>
+            
+            <div class="generator-section">
+                <h2>Step 2: Select Quest</h2>
+                
+                <div class="form-group">
+                    <label for="campaign-quest">Choose Quest:</label>
+                    <select id="campaign-quest">
+                        <!-- Will be populated by JS -->
+                    </select>
+                </div>
+                
+                <div id="quest-info" style="padding: 8px; background: #1a1a1a; border: 1px solid #4a4a4a; border-radius: 4px; margin-top: 10px; min-height: 80px;">
+                    Select a quest to see details
+                </div>
+            </div>
+            
+            <div class="generator-section">
+                <h2>Step 3: Select Encounters (choose exactly 4)</h2>
+                <p style="margin-bottom: 10px; color: #aaa; font-size: 13px;">
+                    Selecting 4 encounters creates exactly 10 card sides:<br>
+                    1 character (2 sides) + 4 encounters (8 sides) + 1 quest (2 sides) = 12 sides<br>
+                    This fits perfectly on one Avery 5371 sheet with 2 rule reference cards!
+                </p>
+                
+                <div class="form-group">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
+                        <div>
+                            <h3 style="font-size: 14px; margin-bottom: 8px;">Weak/Standard Threats</h3>
+                            <div id="encounter-list-weak" class="checkbox-group"></div>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 14px; margin-bottom: 8px;">Tough/Boss Threats</h3>
+                            <div id="encounter-list-tough" class="checkbox-group"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px; padding: 8px; background: #3a3a3a; border-radius: 4px;">
+                    <strong>Selected: <span id="encounter-count">0</span>/4 encounters</strong>
+                </div>
+            </div>
+            
+            <div class="generator-section">
+                <h2>Step 4: Generate Complete Card Set</h2>
+                
+                <div style="padding: 12px; background: #3a3a3a; border-radius: 4px; margin-bottom: 15px;">
+                    <strong>Your Complete 10-Card Set (All Double-Sided):</strong><br>
+                    • 1 Character Card (Stats + Inventory)<br>
+                    • <span id="count-encounters">0</span> Encounter Cards (Threat + Loot Table)<br>
+                    • 1 Quest Card (Objectives + Notes)<br>
+                    • 1 Title Card (Campaign Info + Notes)<br>
+                    • 1 Grid Map Card (1cm grid both sides)<br>
+                    • 1 Quick Reference Card (Rules + Tables)<br>
+                    • 1 Utility Card (Session Tracker + Info)<br>
+                    <strong>Total: 10 cards = 20 sides (fills 1 Avery 5371 sheet perfectly!)</strong>
+                </div>
+                
+                <button onclick="generateCampaign()" style="font-size: 16px; padding: 15px 30px;">
+                    🎲 Generate Complete Card Set
+                </button>
+            </div>
+        </div>
+        
+        <!-- PREVIEW TAB -->
+        <div id="preview-tab" class="tab-content">
+            <div class="generator-section">
+                <h2>Your Campaign Cards</h2>
+                
+                <div style="background: #3a3a3a; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+                    <strong>📋 Printing Instructions for Avery 5371:</strong><br><br>
+                    <strong>DOUBLE-SIDED PRINTING:</strong><br>
+                    The cards are generated with fronts and backs alternating. Your printer needs to flip on the LONG EDGE.<br><br>
+                    <strong>Option 1 - Automatic Duplex:</strong><br>
+                    1. Load Avery 5371 card stock<br>
+                    2. Select "Print on Both Sides" or "Duplex"<br>
+                    3. Choose "Flip on LONG EDGE" (not short edge)<br>
+                    4. Print at Actual Size (100%)<br><br>
+                    <strong>Option 2 - Manual (if option 1 doesn't work):</strong><br>
+                    1. Print ONLY ODD pages (1, 3, 5...) - these are the FRONTS<br>
+                    2. Take printed sheet, flip it on the LONG EDGE (top becomes bottom)<br>
+                    3. Reinsert with blank side up<br>
+                    4. Print ONLY EVEN pages (2, 4, 6...) - these are the BACKS<br>
+                    5. Test with plain paper first!<br><br>
+                    <strong>Sheet Layout:</strong> Portrait, 2 across × 5 down (10 cards)<br>
+                    <strong>Card size:</strong> 3.5" wide × 2" tall each
+                </div>
+                
+                <button class="secondary" onclick="window.print()" style="font-size: 16px; padding: 15px 30px;">
+                    🖨️ Print All Cards
+                </button>
+                
+                <div id="preview-grid" class="card-grid" style="margin-top: 20px;">
+                    <p style="color: #888;">Generate your campaign first to see cards here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PRINT AREA -->
+    <div class="print-area" id="print-area"></div>
+    
+    <script>
+        const classes = {
+            fantasy: {
+                'Warrior': { skills: ['Combat', 'Survival'], gear: ['Longsword', 'Shield', 'Chainmail armor', 'Healing potion'] },
+                'Rogue': { skills: ['Stealth', 'Diplomacy'], gear: ['Daggers (2)', 'Lockpicks', 'Leather armor', 'Grappling hook'] },
+                'Mage': { skills: ['Magic', 'Knowledge'], gear: ['Spellbook', 'Staff', 'Robes', 'Arcane focus'] },
+                'Ranger': { skills: ['Survival', 'Combat'], gear: ['Bow & arrows', 'Hunting knife', 'Leather armor', 'Rope (50ft)'] },
+                'Cleric': { skills: ['Magic', 'Diplomacy'], gear: ['Mace', 'Holy symbol', 'Chainmail', 'Healing herbs'] },
+                'Bard': { skills: ['Diplomacy', 'Knowledge'], gear: ['Rapier', 'Lute', 'Fine clothes', 'Disguise kit'] }
+            },
+            cyberpunk: {
+                'Netrunner': { skills: ['Hacking', 'Tech'], gear: ['Cyberdeck', 'Neural interface', 'ICE breaker', 'Encrypted commlink'] },
+                'Solo': { skills: ['Combat', 'Streetwise'], gear: ['Smart pistol', 'Monofilament blade', 'Armored jacket', 'Tactical visor'] },
+                'Fixer': { skills: ['Streetwise', 'Persuasion'], gear: ['Concealed pistol', 'Credstick (3 Resources)', 'Designer suit', 'Contact list'] },
+                'Techie': { skills: ['Tech', 'Combat'], gear: ['Multi-tool', 'Repair drone', 'Tool kit', 'Modified SMG'] },
+                'Medtech': { skills: ['Tech', 'Persuasion'], gear: ['Medkit (+2 healing uses)', 'Stim injector', 'Surgical tools', 'Light pistol'] },
+                'Rockerboy': { skills: ['Persuasion', 'Streetwise'], gear: ['Charismatic presence', 'Amplifier implant', 'Stylish outfit', 'Holdout pistol'] }
+            }
+        };
+        
+        const encounters = {
+            fantasy: {
+                weak: [
+                    { name: 'Goblin Scout', attack: 'Rusty dagger', special: 'Cowardly: flees at 1 HP', loot: '1 Resource', lootTable: ['Rusty dagger', '1 Resource', 'Torn map scrap', 'Moldy bread', 'Nothing', 'Small pouch (1 Resource)'] },
+                    { name: 'Giant Rat', attack: 'Diseased bite', special: 'Disease: -1 to next roll', loot: 'Rat pelt', lootTable: ['Rat pelt', 'Nothing', 'Shiny button', 'Gnawed bone', 'Disease sample', 'Rat meat'] },
+                    { name: 'Skeleton', attack: 'Bone club', special: 'Undead: immune to fear', loot: 'Ancient coin', lootTable: ['Ancient coin', 'Bone dust', 'Rusty sword', 'Tattered banner', 'Old helmet', 'Nothing'] },
+                    { name: 'Wild Dog', attack: 'Vicious bite', special: 'Pack hunter: +1 if multiple', loot: 'Nothing', lootTable: ['Nothing', 'Leather collar', 'Small bell', 'Dog meat', 'Tracking scent', 'Nothing'] }
+                ],
+                standard: [
+                    { name: 'Orc Warrior', attack: 'Battle axe', special: 'Rage: +1 dmg when below 2 HP', loot: '2 Resources, iron axe', lootTable: ['Iron battle axe', '2 Resources', 'Hide armor', 'War horn', 'Tribal totem', 'Ration pack'] },
+                    { name: 'Shadow Stalker', attack: 'Shadow blade', special: 'First strike: attacks before you', loot: 'Shadow cloak (+1 Stealth)', lootTable: ['Shadow cloak (+1 Stealth)', 'Dark dagger', '2 Resources', 'Smoke bomb', 'Poison vial', 'Silent boots'] },
+                    { name: 'Dire Wolf', attack: 'Savage maul', special: 'Trip: you need 5+ to flee', loot: 'Wolf pelt, meat', lootTable: ['Dire wolf pelt', 'Wolf meat (3 rations)', 'Sharp fangs', '1 Resource', 'Wolf collar', 'Alpha howl stone'] },
+                    { name: 'Bandit', attack: 'Sword & crossbow', special: 'Ranged: can attack while fleeing', loot: '2 Resources, weapon', lootTable: ['Crossbow', 'Short sword', '3 Resources', 'Lockpicks', 'Hidden map', 'Stolen jewelry'] }
+                ],
+                tough: [
+                    { name: 'Troll', attack: 'Massive claws', special: 'Regeneration: heals 1 HP per round', loot: '3 Resources, troll heart', lootTable: ['Troll heart (healing)', '3 Resources', 'Troll hide armor', 'Regeneration stone', 'Cave treasure', 'Giant club'] },
+                    { name: 'Dark Knight', attack: 'Cursed greatsword', special: 'Armor: first hit does 0 damage', loot: 'Enchanted armor, 2 Resources', lootTable: ['Cursed greatsword', 'Plate armor', '3 Resources', 'Dark seal', 'Helmet of fear', 'Knight\'s honor'] },
+                    { name: 'Fire Elemental', attack: 'Flame burst', special: 'Burning: 1 dmg per round in melee', loot: 'Fire gem, 2 Resources', lootTable: ['Fire gem (magic)', 'Ember core', '3 Resources', 'Flame scroll', 'Heat shield', 'Phoenix feather'] },
+                    { name: 'Wyvern', attack: 'Claws & poison tail', special: 'Poison: -1 to all rolls for 3 rounds', loot: 'Wyvern scales, 3 Resources', lootTable: ['Wyvern scales (armor)', 'Poison sac', '4 Resources', 'Dragon tooth', 'Wing membrane', 'Nest treasure'] }
+                ],
+                boss: [
+                    { name: 'Ancient Dragon', attack: 'Fire breath & claws', special: 'Flight: requires Magic/ranged to hit', loot: 'Dragon hoard (5 Resources), scale armor', lootTable: ['Dragon scale armor', '5 Resources', 'Magic sword', 'Dragon egg', 'Ancient tome', 'Crown jewel'] },
+                    { name: 'Lich Lord', attack: 'Death magic', special: 'Life drain: heals 1 HP when damaging you', loot: 'Spellbook, phylactery, 4 Resources', lootTable: ['Master spellbook', 'Phylactery', '5 Resources', 'Staff of power', 'Necromancy scroll', 'Soul gem'] },
+                    { name: 'Giant King', attack: 'Colossal hammer', special: 'Earthquake: AOE, hard to dodge', loot: 'Giant crown, 5 Resources, magic hammer', lootTable: ['Giant\'s crown', 'War hammer (2 dmg)', '6 Resources', 'Giant armor', 'Mountain stone', 'Titan\'s ring'] },
+                    { name: 'Demon Prince', attack: 'Hellfire & claws', special: 'Summon minions: spawns weak enemies', loot: 'Infernal artifact, 5 Resources', lootTable: ['Demon blade', 'Hellfire gem', '6 Resources', 'Infernal armor', 'Summoning stone', 'Prince\'s seal'] }
+                ]
+            },
+            cyberpunk: {
+                weak: [
+                    { name: 'Street Punk', attack: 'Knife & attitude', special: 'Backup: may call for help', loot: '1 Resource, cheap knife', lootTable: ['Switchblade', '1 Resource', 'Cheap credstick', 'Gang colors', 'Nothing', 'Burner phone'] },
+                    { name: 'Security Drone', attack: 'Taser', special: 'Hovering: hard to hit with melee', loot: 'Drone parts', lootTable: ['Drone processor', 'Camera module', 'Battery pack', 'Targeting chip', 'Nothing', 'Scrap metal'] },
+                    { name: 'Gangbanger', attack: 'Pistol', special: 'Reckless: 5+ hits, but exposed', loot: '1 Resource, pistol', lootTable: ['Light pistol', '2 Resources', 'Ammo clip', 'Gang intel', 'Stim pack', 'Stolen watch'] },
+                    { name: 'Malfunctioning Bot', attack: 'Sparking cables', special: 'Erratic: roll twice, use lower', loot: 'Scrap metal', lootTable: ['Scrap metal', 'Wiring', 'Servo motor', 'AI fragment', 'Battery', 'Nothing'] }
+                ],
+                standard: [
+                    { name: 'Corporate Guard', attack: 'SMG burst', special: 'Tactical training: 3+ to hit', loot: '2 Resources, armor vest', lootTable: ['SMG', 'Armor vest', '2 Resources', 'Security keycard', 'Tactical gear', 'Comms unit'] },
+                    { name: 'Cyber Psycho', attack: 'Mantis blades', special: 'Berserk: +1 dmg, can\'t flee', loot: 'Cyberware, 2 Resources', lootTable: ['Mantis blades', 'Neural implant', '3 Resources', 'Combat drugs', 'Berserker chip', 'Armor plating'] },
+                    { name: 'Combat Hacker', attack: 'ICE attack', special: 'Quickhack: disables 1 cyberware', loot: 'Encrypted data, cyberdeck', lootTable: ['Cyberdeck upgrade', 'ICE breaker', '2 Resources', 'Hacking software', 'Neural link', 'Data chip'] },
+                    { name: 'Gang Enforcer', attack: 'Shotgun', special: 'Close range: 2 dmg at melee', loot: '2 Resources, heavy weapon', lootTable: ['Combat shotgun', 'Heavy armor', '3 Resources', 'Gang credentials', 'Territory map', 'Intimidation chip'] }
+                ],
+                tough: [
+                    { name: 'Cyborg Assassin', attack: 'Smart weapons', special: 'Cloaking: first attack always hits', loot: 'Military cyberware, 3 Resources', lootTable: ['Stealth implant', 'Smart gun', '4 Resources', 'Targeting system', 'Cloaking device', 'Assassin chip'] },
+                    { name: 'Rogue AI Fragment', attack: 'System crash', special: 'Adaptive: learns from attacks', loot: 'AI core, 3 Resources', lootTable: ['AI core', 'Quantum processor', '4 Resources', 'Neural matrix', 'Data vault', 'System override'] },
+                    { name: 'Heavy Mech', attack: 'Chain gun', special: 'Armor plating: 3+ to damage it', loot: 'Mech parts, power core, 2 Resources', lootTable: ['Power core', 'Mech armor', '4 Resources', 'Weapon system', 'Hydraulics', 'Control chip'] },
+                    { name: 'Elite Soldier', attack: 'Military rifle & grenades', special: 'Grenade: AOE damage', loot: 'Military gear, 3 Resources', lootTable: ['Assault rifle', 'Frag grenades', '4 Resources', 'Combat armor', 'Military ID', 'Med kit'] }
+                ],
+                boss: [
+                    { name: 'Corporate Exec', attack: 'Bodyguard team', special: 'Protected: must defeat guards first', loot: 'Access codes, 5 Resources, rare cyberware', lootTable: ['Executive cyberware', 'Corp access codes', '6 Resources', 'Luxury implant', 'Stock portfolio', 'Penthouse key'] },
+                    { name: 'Rogue AI', attack: 'Network assault', special: 'Omnipresent: attacks from anywhere', loot: 'AI personality matrix, 5 Resources', lootTable: ['AI matrix', 'Master program', '6 Resources', 'Network access', 'Quantum chip', 'Data fortress'] },
+                    { name: 'Cyborg Warlord', attack: 'Full body weaponry', special: 'Multi-attack: rolls twice per turn', loot: 'Legendary cyberware, 4 Resources', lootTable: ['Legendary cyberware', 'Weapon suite', '6 Resources', 'Neural crown', 'Power armor', 'Command chip'] },
+                    { name: 'Megacorp Security Chief', attack: 'Advanced tech arsenal', special: 'Reinforcements: summons guards', loot: 'Corp secrets, 5 Resources, prototype gear', lootTable: ['Prototype weapon', 'Corp secrets', '6 Resources', 'Security override', 'Executive pass', 'Black ops gear'] }
+                ]
+            }
+        };
+        
+        const encounterStats = {
+            weak: { hp: 2, toHit: '4+', damage: 1 },
+            standard: { hp: 4, toHit: '4+', damage: 1 },
+            tough: { hp: 6, toHit: '3+', damage: 1 },
+            boss: { hp: 10, toHit: '3+', damage: 2 }
+        };
+        
+        const quests = {
+            fantasy: {
+                short: [
+                    { title: 'The Goblin Camp', desc: 'Local goblins have been raiding farms', objectives: ['Track goblins to their camp', 'Defeat goblin leader', 'Recover stolen goods'], reward: '3 Resources, village gratitude' },
+                    { title: 'Lost Heirloom', desc: 'A family heirloom was stolen by bandits', objectives: ['Find bandit hideout', 'Sneak past or fight guards', 'Retrieve the heirloom'], reward: '2 Resources, family ring (+1 Diplomacy)' },
+                    { title: 'Haunted Crypt', desc: 'Undead have risen in the old cemetery', objectives: ['Enter the crypt', 'Defeat skeleton guardians', 'Destroy the source of necromancy'], reward: '3 Resources, holy relic' }
+                ],
+                medium: [
+                    { title: 'The Dragon\'s Lair', desc: 'A dragon threatens the kingdom', objectives: ['Gather info on dragon\'s weakness', 'Journey to mountain lair', 'Navigate trapped tunnels', 'Face the dragon guardian', 'Slay or negotiate with dragon'], reward: '5 Resources, dragon scale armor, fame' },
+                    { title: 'The Lost Temple', desc: 'Ancient temple holds powerful artifact', objectives: ['Decode ancient map', 'Trek through dangerous jungle', 'Solve temple puzzles', 'Defeat temple guardian', 'Claim the artifact'], reward: 'Magic artifact, 4 Resources, +2 Progress' }
+                ],
+                long: [
+                    { title: 'The Dark Lord Returns', desc: 'An ancient evil awakens', objectives: ['Learn of dark prophecy', 'Gather legendary heroes', 'Find shards of ancient weapon', 'Storm the dark fortress', 'Fight through army', 'Confront the Dark Lord', 'Save the realm'], reward: 'Legendary weapon, 8 Resources, heroic legacy' }
+                ]
+            },
+            cyberpunk: {
+                short: [
+                    { title: 'Data Heist', desc: 'Steal corporate data from secure server', objectives: ['Bypass building security', 'Hack the mainframe', 'Extract the data'], reward: '3 Resources, encrypted files' },
+                    { title: 'Gang Territory', desc: 'A gang is threatening your neighborhood', objectives: ['Gather intel on gang', 'Confront gang lieutenant', 'Drive them out of territory'], reward: '2 Resources, street rep' },
+                    { title: 'Rogue AI', desc: 'A malfunctioning AI is causing havoc', objectives: ['Locate AI\'s physical node', 'Fight through automated defenses', 'Shut down or reprogram AI'], reward: '3 Resources, AI core' }
+                ],
+                medium: [
+                    { title: 'Corporate Espionage', desc: 'Infiltrate rival megacorp', objectives: ['Create fake credentials', 'Infiltrate corp tower', 'Navigate security checkpoints', 'Access executive systems', 'Escape with data'], reward: '5 Resources, corp secrets, cyberware upgrade' },
+                    { title: 'The Cyberpsycho', desc: 'A rogue cyborg is on a rampage', objectives: ['Track cyberpsycho movements', 'Discover their identity', 'Set up ambush location', 'Subdue or eliminate target', 'Uncover who made them'], reward: 'Military cyberware, 4 Resources, +2 Progress' }
+                ],
+                long: [
+                    { title: 'Bring Down The Corp', desc: 'Take down a corrupt megacorporation', objectives: ['Expose corp corruption', 'Recruit allies & hackers', 'Sabotage facilities', 'Steal damning evidence', 'Broadcast evidence worldwide', 'Survive corp retaliation', 'Watch the empire fall'], reward: 'Legendary reputation, 8 Resources, city changes' }
+                ]
+            }
+        };
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+        }
+        
+        function updateClasses() {
+            const setting = document.getElementById('char-setting').value;
+            const classSelect = document.getElementById('char-class');
+            classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+            
+            Object.keys(classes[setting]).forEach(className => {
+                const option = document.createElement('option');
+                option.value = className;
+                option.textContent = className;
+                classSelect.appendChild(option);
+            });
+            
+            document.getElementById('class-skills').innerHTML = 'Select a class to see skills';
+            document.getElementById('class-gear').innerHTML = 'Select a class to see gear';
+            
+            updateQuestList();
+            updateEncounterList();
+        }
+        
+        function updateClassInfo() {
+            const setting = document.getElementById('char-setting').value;
+            const className = document.getElementById('char-class').value;
+            
+            if (!className) {
+                document.getElementById('class-skills').innerHTML = 'Select a class to see skills';
+                document.getElementById('class-gear').innerHTML = 'Select a class to see gear';
+                return;
+            }
+            
+            const classData = classes[setting][className];
+            document.getElementById('class-skills').innerHTML = classData.skills.map(s => `• ${s}`).join('<br>');
+            document.getElementById('class-gear').innerHTML = classData.gear.map(g => `• ${g}`).join('<br>');
+        }
+        
+        function updateQuestList() {
+            const setting = document.getElementById('char-setting').value;
+            const questSelect = document.getElementById('campaign-quest');
+            questSelect.innerHTML = '<option value="">-- Select Quest --</option>';
+            
+            ['short', 'medium', 'long'].forEach(type => {
+                quests[setting][type].forEach((quest, index) => {
+                    const option = document.createElement('option');
+                    option.value = `${type}-${index}`;
+                    option.textContent = `${quest.title} (${type})`;
+                    questSelect.appendChild(option);
+                });
+            });
+        }
+        
+        function updateQuestInfo() {
+            const setting = document.getElementById('char-setting').value;
+            const questValue = document.getElementById('campaign-quest').value;
+            
+            if (!questValue) {
+                document.getElementById('quest-info').innerHTML = 'Select a quest to see details';
+                return;
+            }
+            
+            const [type, index] = questValue.split('-');
+            const quest = quests[setting][type][parseInt(index)];
+            
+            document.getElementById('quest-info').innerHTML = `
+                <strong>${quest.title}</strong><br>
+                ${quest.desc}<br>
+                <br><strong>Objectives (${quest.objectives.length}):</strong><br>
+                ${quest.objectives.map((obj, i) => `${i + 1}. ${obj}`).join('<br>')}<br>
+                <br><strong>Reward:</strong> ${quest.reward}
+            `;
+        }
+        
+        function updateEncounterList() {
+            const setting = document.getElementById('char-setting').value;
+            const weakList = document.getElementById('encounter-list-weak');
+            const toughList = document.getElementById('encounter-list-tough');
+            
+            weakList.innerHTML = '';
+            toughList.innerHTML = '';
+            
+            ['weak', 'standard'].forEach(type => {
+                encounters[setting][type].forEach((encounter, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'checkbox-item';
+                    div.innerHTML = `
+                        <input type="checkbox" id="encounter-${type}-${index}" 
+                               value="${type}-${index}" 
+                               onchange="updateEncounterCount()">
+                        <label for="encounter-${type}-${index}">${encounter.name} (${type})</label>
+                    `;
+                    weakList.appendChild(div);
+                });
+            });
+            
+            ['tough', 'boss'].forEach(type => {
+                encounters[setting][type].forEach((encounter, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'checkbox-item';
+                    div.innerHTML = `
+                        <input type="checkbox" id="encounter-${type}-${index}" 
+                               value="${type}-${index}" 
+                               onchange="updateEncounterCount()">
+                        <label for="encounter-${type}-${index}">${encounter.name} (${type})</label>
+                    `;
+                    toughList.appendChild(div);
+                });
+            });
+            
+            updateEncounterCount();
+        }
+        
+        function updateEncounterCount() {
+            const checkboxes = document.querySelectorAll('#encounter-list-weak input:checked, #encounter-list-tough input:checked');
+            const count = checkboxes.length;
+            document.getElementById('encounter-count').textContent = count;
+            document.getElementById('count-encounters').textContent = count;
+        }
+        
+        document.getElementById('char-setting').addEventListener('change', updateClasses);
+        document.getElementById('char-class').addEventListener('change', updateClassInfo);
+        document.getElementById('campaign-quest').addEventListener('change', updateQuestInfo);
+        
+        updateClasses();
+        
+        function generateCampaign() {
+            const name = document.getElementById('char-name').value;
+            const setting = document.getElementById('char-setting').value;
+            const className = document.getElementById('char-class').value;
+            const questValue = document.getElementById('campaign-quest').value;
+            
+            if (!name) { alert('Please enter a character name!'); return; }
+            if (!className) { alert('Please select a class!'); return; }
+            if (!questValue) { alert('Please select a quest!'); return; }
+            
+            const selectedEncounters = Array.from(
+                document.querySelectorAll('#encounter-list-weak input:checked, #encounter-list-tough input:checked')
+            ).map(cb => cb.value);
+            
+            if (selectedEncounters.length === 0) {
+                alert('Please select at least one encounter!');
+                return;
+            }
+            
+            if (selectedEncounters.length !== 4) {
+                const proceed = confirm(`You selected ${selectedEncounters.length} encounters. For optimal printing (10 card sides), select exactly 4 encounters. Continue anyway?`);
+                if (!proceed) return;
+            }
+            
+            const classData = classes[setting][className];
+            const [questType, questIndex] = questValue.split('-');
+            const quest = quests[setting][questType][parseInt(questIndex)];
+            
+            let frontsHTML = '';
+            let backsHTML = '';
+            
+            // 1. Character Card
+            const charCards = generateCharacterCard(name, className, setting, classData);
+            frontsHTML += charCards.front;
+            backsHTML += charCards.back;
+            
+            // 2. Encounter Cards
+            selectedEncounters.forEach(encounterValue => {
+                const [type, index] = encounterValue.split('-');
+                const encounter = encounters[setting][type][parseInt(index)];
+                const stats = encounterStats[type];
+                const encCards = generateEncounterCard(encounter, type, setting, stats);
+                frontsHTML += encCards.front;
+                backsHTML += encCards.back;
+            });
+            
+            // 3. Quest Card
+            const questCards = generateQuestCard(quest, setting);
+            frontsHTML += questCards.front;
+            backsHTML += questCards.back;
+            
+            // 4-7. Utility Cards (always included to make 10 cards)
+            const questTitle = quest.title;
+            
+            const titleCards = generateTitleCard(name, setting, questTitle);
+            frontsHTML += titleCards.front;
+            backsHTML += titleCards.back;
+            
+            const gridCards = generateGridCard();
+            frontsHTML += gridCards.front;
+            backsHTML += gridCards.back;
+            
+            const refCards = generateQuickRefCard();
+            frontsHTML += refCards.front;
+            backsHTML += refCards.back;
+            
+            const utilityCards = generateUtilityCard();
+            frontsHTML += utilityCards.front;
+            backsHTML += utilityCards.back;
+            
+            // Combine with page break between fronts and backs
+            document.getElementById('print-area').innerHTML = frontsHTML + '<div style="page-break-after: always; clear: both;"></div><div style="clear: both;">' + backsHTML + '</div>';
+            
+            updatePreview(frontsHTML + backsHTML);
+            
+            document.querySelectorAll('.tab')[1].click();
+            
+            alert(`Campaign generated!\n\nCOMPLETE 10-CARD SET:\n• 1 Character Card\n• ${selectedEncounters.length} Encounter Cards\n• 1 Quest Card\n• 1 Title/Notes Card\n• 1 Grid Map Card\n• 1 Quick Reference Card\n• 1 Utility/Tracker Card\n\nPRINTING:\n1. Print page 1 (FRONTS)\n2. Flip sheet on LONG EDGE\n3. Print page 2 (BACKS)`);
+        }
+        
+        function generateCharacterCard(name, className, setting, classData) {
+            const front = `
+                <div class="card card-front">
+                    <div class="content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; height: 100%;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 9pt; margin-bottom: 2px;">${name.toUpperCase()}</h1>
+                            <h2 style="font-size: 5.5pt;">${className} • ${setting.toUpperCase()}</h2>
+                            <div style="font-size: 5pt; margin-top: 2px;">
+                                <strong>HP:</strong> <span class="stat-box">6</span> ☐☐☐☐☐☐<br>
+                                <strong>RES:</strong> <span class="stat-box">6</span> ☐☐☐☐☐☐<br>
+                                <strong>PRG:</strong> <span class="stat-box">0/12</span><br>
+                                ☐☐☐☐☐☐☐☐☐☐☐☐
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 3px;">COMBAT</h2>
+                            <div style="font-size: 4.5pt;">
+                                <strong>Attack:</strong> Roll 1d6 action<br>
+                                <strong>Damage:</strong> 1 HP on success<br>
+                                <strong>Hit on:</strong> 5-6 (3-6 w/ skill)
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 3px;">SKILLS (+1)</h2>
+                            <div style="font-size: 5pt;">
+                                • ${classData.skills[0]}<br>
+                                • ${classData.skills[1]}
+                            </div>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 5.5pt;">STARTING GEAR</h2>
+                            <div style="font-size: 4.5pt;">
+                                ${classData.gear.map(g => `• ${g}`).join('<br>')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">Character</div>
+                </div>
+            `;
+            
+            const back = `
+                <div class="card card-back" style="transform: rotate(180deg);">
+                    <div class="content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 9pt; margin-bottom: 2px;">INVENTORY</h1>
+                            <h2 style="font-size: 5.5pt;">EQUIPMENT</h2>
+                            <div style="font-size: 4.5pt;">
+                                ${classData.gear.map(g => `• ${g}`).join('<br>')}<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 5.5pt;">QUEST LOG</h2>
+                            <div style="font-size: 4.5pt;">
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">NOTES</h2>
+                            <div style="font-size: 4.5pt;">
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">Character (Back)</div>
+                </div>
+            `;
+            
+            return { front, back };
+        }
+        
+        function generateEncounterCard(encounter, type, setting, stats) {
+            const front = `
+                <div class="card card-front">
+                    <div class="content" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 3px;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 8pt; margin-bottom: 2px;">⚔️ ${encounter.name.toUpperCase()}</h1>
+                            <h2 style="font-size: 5.5pt;">${type.toUpperCase()} THREAT</h2>
+                            <table style="font-size: 4.5pt; margin: 2px 0;">
+                                <tr>
+                                    <td><strong>HP</strong></td>
+                                    <td class="center">${stats.hp}</td>
+                                    <td><strong>Hit</strong></td>
+                                    <td class="center">${stats.toHit}</td>
+                                    <td><strong>Dmg</strong></td>
+                                    <td class="center">${stats.damage}</td>
+                                </tr>
+                            </table>
+                            <h2 style="font-size: 5.5pt;">ATTACK</h2>
+                            <div style="font-size: 4.5pt;">${encounter.attack}</div>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">SPECIAL</h2>
+                            <div style="font-size: 4.5pt;">${encounter.special}</div>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 5.5pt;">REWARD</h2>
+                            <div style="font-size: 4.5pt;">${encounter.loot}</div>
+                            <h2 style="font-size: 5.5pt; margin-top: 3px;">TRACK HP</h2>
+                            <div style="font-size: 5pt;">${'☐ '.repeat(stats.hp)}</div>
+                        </div>
+                    </div>
+                    <div class="footer">Encounter</div>
+                </div>
+            `;
+            
+            const back = `
+                <div class="card card-back" style="transform: rotate(180deg);">
+                    <div class="content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 8pt; margin-bottom: 2px;">LOOT TABLE (1d6)</h1>
+                            <h2 style="font-size: 5pt;">${encounter.name.toUpperCase()}</h2>
+                            <div style="font-size: 4.5pt; margin-bottom: 2px;">Roll 1d6 when defeated:</div>
+                            <table style="font-size: 4.5pt;">
+                                ${encounter.lootTable.slice(0, 3).map((item, i) => `
+                                    <tr>
+                                        <td class="center" style="width: 15px;"><strong>${i + 1}</strong></td>
+                                        <td>${item}</td>
+                                    </tr>
+                                `).join('')}
+                            </table>
+                        </div>
+                        <div>
+                            <table style="font-size: 4.5pt; margin-top: 24px;">
+                                ${encounter.lootTable.slice(3, 6).map((item, i) => `
+                                    <tr>
+                                        <td class="center" style="width: 15px;"><strong>${i + 4}</strong></td>
+                                        <td>${item}</td>
+                                    </tr>
+                                `).join('')}
+                            </table>
+                            <h2 style="font-size: 5.5pt; margin-top: 3px;">NOTES</h2>
+                            <div style="font-size: 4pt;">
+                                __________<br>
+                                __________<br>
+                                __________
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">Loot</div>
+                </div>
+            `;
+            
+            return { front, back };
+        }
+        
+        function generateQuestCard(quest, setting) {
+            const front = `
+                <div class="card card-front">
+                    <div class="content" style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 3px;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 8pt; margin-bottom: 2px;">📜 ${quest.title.toUpperCase()}</h1>
+                            <h2 style="font-size: 5.5pt;">QUEST</h2>
+                            <div style="font-size: 4.5pt; margin-bottom: 2px;">${quest.desc}</div>
+                            <h2 style="font-size: 5.5pt;">OBJECTIVES (${quest.objectives.length})</h2>
+                            <div style="font-size: 4.5pt;">
+                                ${quest.objectives.map((obj, i) => `${i + 1}. ${obj}`).join('<br>')}
+                            </div>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 5.5pt;">TRACK</h2>
+                            <div style="font-size: 5pt;">
+                                ${quest.objectives.map((_, i) => `☐ ${i + 1}`).join('<br>')}
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 3px;">REWARD</h2>
+                            <div style="font-size: 4.5pt;">${quest.reward}</div>
+                        </div>
+                    </div>
+                    <div class="footer">Quest</div>
+                </div>
+            `;
+            
+            const back = `
+                <div class="card card-back" style="transform: rotate(180deg);">
+                    <div class="content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 8pt; margin-bottom: 2px;">QUEST NOTES</h1>
+                            <h2 style="font-size: 5.5pt;">DISCOVERIES</h2>
+                            <div style="font-size: 4pt;">
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">NPCS MET</h2>
+                            <div style="font-size: 4pt;">
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 5.5pt;">LOCATIONS</h2>
+                            <div style="font-size: 4pt;">
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">OTHER</h2>
+                            <div style="font-size: 4pt;">
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">Quest Notes</div>
+                </div>
+            `;
+            
+            return { front, back };
+        }
+        
+        function generateTitleCard(name, setting, quest) {
+            const front = `
+                <div class="card card-front">
+                    <div class="content" style="text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                        <h1 style="font-size: 16pt; margin-bottom: 8px; letter-spacing: 2px;">⚔️ TINQUEST RPG ⚔️</h1>
+                        <div style="font-size: 6pt; margin-bottom: 15px;">A Solo RPG Adventure in an Altoids Tin</div>
+                        <div style="border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 8px; margin: 0 20px;">
+                            <div style="font-size: 7pt; margin-bottom: 5px;"><strong>CAMPAIGN:</strong></div>
+                            <div style="font-size: 9pt; margin-bottom: 8px;">${quest}</div>
+                            <div style="font-size: 7pt; margin-bottom: 3px;"><strong>CHARACTER:</strong></div>
+                            <div style="font-size: 8pt; margin-bottom: 8px;">${name}</div>
+                            <div style="font-size: 7pt; margin-bottom: 3px;"><strong>SETTING:</strong></div>
+                            <div style="font-size: 8pt;">${setting.toUpperCase()}</div>
+                        </div>
+                        <div style="font-size: 5pt; margin-top: 15px;">DATE STARTED: _______________</div>
+                    </div>
+                    <div class="footer">Title Card</div>
+                </div>
+            `;
+            
+            const back = `
+                <div class="card card-back" style="transform: rotate(180deg);">
+                    <div class="content">
+                        <h1 style="font-size: 9pt; margin-bottom: 3px;">CAMPAIGN NOTES</h1>
+                        <div style="font-size: 4.5pt; line-height: 1.4;">
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}<br>
+                            ${'_'.repeat(65)}
+                        </div>
+                    </div>
+                    <div class="footer">Notes</div>
+                </div>
+            `;
+            
+            return { front, back };
+        }
+        
+        function generateGridCard() {
+            const front = `
+                <div class="card card-front">
+                    <h1 style="font-size: 8pt; margin-bottom: 2px;">MAP GRID (1cm)</h1>
+                    <div style="width: calc(100% - 4px); height: calc(100% - 22px); border: 2px solid #000; background-image: linear-gradient(#666 1px, transparent 1px), linear-gradient(90deg, #666 1px, transparent 1px); background-size: 28.35pt 28.35pt; background-position: 0 0; print-color-adjust: exact; -webkit-print-color-adjust: exact;">
+                    </div>
+                    <div class="footer">Grid Map</div>
+                </div>
+            `;
+            
+            const back = `
+                <div class="card card-back" style="transform: rotate(180deg);">
+                    <h1 style="font-size: 8pt; margin-bottom: 2px;">MAP GRID (1cm)</h1>
+                    <div style="width: calc(100% - 4px); height: calc(100% - 22px); border: 2px solid #000; background-image: linear-gradient(#666 1px, transparent 1px), linear-gradient(90deg, #666 1px, transparent 1px); background-size: 28.35pt 28.35pt; background-position: 0 0; print-color-adjust: exact; -webkit-print-color-adjust: exact;">
+                    </div>
+                    <div class="footer">Grid Map</div>
+                </div>
+            `;
+            
+            return { front, back };
+        }
+        
+        function generateQuickRefCard() {
+            const front = `
+                <div class="card card-front">
+                    <div class="content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 8pt; margin-bottom: 2px;">QUICK REFERENCE</h1>
+                            <h2 style="font-size: 5.5pt;">ACTION ROLL (1d6)</h2>
+                            <table style="font-size: 4.5pt;">
+                                <tr><td>1-2</td><td>Fail</td></tr>
+                                <tr><td>3-4</td><td>Partial</td></tr>
+                                <tr><td>5-6</td><td>Success</td></tr>
+                            </table>
+                            <div style="font-size: 4pt; margin-top: 1px;">+1 with skill, -1 if wounded (HP≤2)</div>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">ORACLE (1d6)</h2>
+                            <table style="font-size: 4.5pt;">
+                                <tr><td>1</td><td>No, and...</td></tr>
+                                <tr><td>2-3</td><td>No</td></tr>
+                                <tr><td>4-5</td><td>Yes</td></tr>
+                                <tr><td>6</td><td>Yes, and...</td></tr>
+                            </table>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 5.5pt; margin-top: 16px;">COMBAT</h2>
+                            <div style="font-size: 4.5pt;">
+                                <strong>Attack:</strong> Roll action<br>
+                                <strong>Enemy:</strong> Roll 1d6<br>
+                                • 1-3: Miss<br>
+                                • 4-5: Hit (1 dmg)<br>
+                                • 6: Crit (2 dmg)<br>
+                                <strong>Flee:</strong> Roll action
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">RESOURCES</h2>
+                            <div style="font-size: 4.5pt;">
+                                Spend 1 to:<br>
+                                • Reroll die<br>
+                                • Heal 2 HP<br>
+                                • Gain advantage
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">Quick Ref</div>
+                </div>
+            `;
+            
+            const back = `
+                <div class="card card-back" style="transform: rotate(180deg);">
+                    <div class="content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 8pt; margin-bottom: 2px;">RANDOM EVENTS (1d6)</h1>
+                            <table style="font-size: 4.5pt;">
+                                <tr><td>1</td><td>Danger/Hostile</td></tr>
+                                <tr><td>2</td><td>Obstacle</td></tr>
+                                <tr><td>3</td><td>Discovery</td></tr>
+                                <tr><td>4</td><td>NPC (neutral)</td></tr>
+                                <tr><td>5</td><td>Opportunity</td></tr>
+                                <tr><td>6</td><td>Breakthrough!</td></tr>
+                            </table>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">THREAT LEVELS</h2>
+                            <table style="font-size: 4.5pt;">
+                                <tr><td><strong>Weak</strong></td><td>2 HP, 4+ hit</td></tr>
+                                <tr><td><strong>Standard</strong></td><td>4 HP, 4+ hit</td></tr>
+                                <tr><td><strong>Tough</strong></td><td>6 HP, 3+ hit</td></tr>
+                                <tr><td><strong>Boss</strong></td><td>10 HP, 3+ hit, +1 dmg</td></tr>
+                            </table>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 5.5pt;">STATS</h2>
+                            <div style="font-size: 4.5pt;">
+                                <strong>Health:</strong> Start 6, 0 = dead<br>
+                                <strong>Resources:</strong> Start 6<br>
+                                <strong>Progress:</strong> Need 12 to win
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">WHAT YOU NEED</h2>
+                            <div style="font-size: 4.5pt;">
+                                • 2 mini d6 (diff. colors)<br>
+                                • Mini pen/golf pencil<br>
+                                • These 10 cards
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">TIPS</h2>
+                            <div style="font-size: 4pt;">
+                                • Rest to heal 2 HP<br>
+                                • Ask Oracle questions<br>
+                                • Track objectives<br>
+                                • Use grid for maps
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">Quick Ref</div>
+                </div>
+            `;
+            
+            return { front, back };
+        }
+        
+        function generateUtilityCard() {
+            const front = `
+                <div class="card card-front">
+                    <div class="content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 8pt; margin-bottom: 2px;">SESSION TRACKER</h1>
+                            <h2 style="font-size: 5.5pt;">SESSIONS PLAYED</h2>
+                            <div style="font-size: 5pt;">
+                                ☐ Session 1 ___/___/___<br>
+                                ☐ Session 2 ___/___/___<br>
+                                ☐ Session 3 ___/___/___<br>
+                                ☐ Session 4 ___/___/___<br>
+                                ☐ Session 5 ___/___/___<br>
+                                ☐ Session 6 ___/___/___<br>
+                                ☐ Session 7 ___/___/___<br>
+                                ☐ Session 8 ___/___/___
+                            </div>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 5.5pt;">PROGRESS LOG</h2>
+                            <div style="font-size: 4pt;">
+                                ______________________<br>
+                                ______________________<br>
+                                ______________________<br>
+                                ______________________<br>
+                                ______________________<br>
+                                ______________________<br>
+                                ______________________<br>
+                                ______________________<br>
+                                ______________________<br>
+                                ______________________
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">Utility</div>
+                </div>
+            `;
+            
+            const back = `
+                <div class="card card-back" style="transform: rotate(180deg);">
+                    <div class="content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
+                        <div>
+                            <h1 style="grid-column: 1 / -1; font-size: 8pt; margin-bottom: 2px;">TRACKER</h1>
+                            <h2 style="font-size: 5.5pt;">NPCS MET</h2>
+                            <div style="font-size: 4pt;">
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                            <h2 style="font-size: 5.5pt; margin-top: 2px;">TREASURE FOUND</h2>
+                            <div style="font-size: 4pt;">
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 5.5pt;">IMPORTANT INFO</h2>
+                            <div style="font-size: 4pt;">
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________<br>
+                                _______________
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">Utility</div>
+                </div>
+            `;
+            
+            return { front, back };
+        }
+        
+        function updatePreview(printHTML) {
+            const previewGrid = document.getElementById('preview-grid');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = printHTML;
+            
+            let previewHTML = '';
+            const cards = tempDiv.querySelectorAll('.card');
+            
+            cards.forEach(card => {
+                const cardContent = card.innerHTML;
+                const isBack = card.classList.contains('card-back');
+                previewHTML += `
+                    <div class="card-preview" style="background: ${isBack ? '#e8e8e8' : '#f5f5f5'};">
+                        ${cardContent}
+                    </div>
+                `;
+            });
+            
+            previewGrid.innerHTML = previewHTML;
+        }
+    </script>
+</body>
+</html>
